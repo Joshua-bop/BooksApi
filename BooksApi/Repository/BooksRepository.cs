@@ -12,10 +12,11 @@ namespace BooksApi.Repository
             _dataContext = dataContext;
         }
 
-        public async Task AddBook(Book book)
+        public async Task<long> AddBook(Book book)
         {
             _dataContext.Books.Add(book);
             await _dataContext.SaveChangesAsync();
+            return book.Id;
         }
 
         public async Task DeleteBookById(long id)

@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BooksApi.Models
+namespace BooksApi.Models.RequestDtos
 {
-    public class Book
+    public class CreateBookRequestDto
     {
-        public long Id { get; set; }
         [Required]
         public string Title { get; set; }
         [Required]
@@ -12,13 +11,8 @@ namespace BooksApi.Models
         [Required]
         public int Price { get; set; }
 
-        public Book()
+        public CreateBookRequestDto(string title, string author, int price)
         {
-
-        }
-        public Book(long id, string title, string author, int price)
-        {
-            Id = id;
             Title = title;
             Author = author;
             Price = price;

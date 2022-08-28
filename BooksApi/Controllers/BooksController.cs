@@ -5,8 +5,10 @@ using BooksApi.Attributes;
 using BooksApi.Models;
 using BooksApi.Models.Responses;
 using BooksApi.Repository.Contracts;
+using BooksApi.Models.RequestDtos;
 using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
+using AutoMapper;
 
 namespace BooksApi.Controllers
 {
@@ -15,10 +17,12 @@ namespace BooksApi.Controllers
     public class BooksController : ControllerBase
     {
         private readonly IBooksRepository _BooksRepository;
+        private readonly IMapper _mapper;
 
-        public BooksController(IBooksRepository booksRepository)
+        public BooksController(IBooksRepository booksRepository, IMapper mapper)
         {
             _BooksRepository = booksRepository;
+            _mapper = mapper;
         }
         /// <summary>
         /// Creates a new book
@@ -30,18 +34,20 @@ namespace BooksApi.Controllers
         [Route("//books")]
         [ValidateModelState]
         [SwaggerOperation("CreateBook")]
-        [SwaggerResponse(statusCode: 201, type: typeof(InlineResponse201), description: "Created")]
+        [SwaggerResponse(statusCode: 201, type: typeof(BookApiResponse201), description: "Created")]
         [SwaggerResponse(statusCode: 400, type: typeof(BookApiResponse400), description: "Bad Request")]
-        public async Task<IActionResult> CreateBook([FromBody] Book body)
+        public async Task<IActionResult> CreateBook([FromBody] CreateBookRequestDto body)
         {
             //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(201, default(InlineResponse201));
 
             //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(400, default(InlineResponse400));
-            await _BooksRepository.AddBook(body);
-
-            return StatusCode(201, default(InlineResponse201));
+            Book mappedBook = _mapper.Map<Book>(body);
+            
+            var response = new BookApiResponse201();
+            response.Id = await _BooksRepository.AddBook(mappedBook);
+            return StatusCode(201, response);
         }
 
         /// <summary>
@@ -121,7 +127,7 @@ namespace BooksApi.Controllers
         [Route("//books/{id}")]
         [ValidateModelState]
         [SwaggerOperation("UpdateBookById")]
-        [SwaggerResponse(statusCode: 400, type: typeof(InlineResponse400), description: "Bad Request")]
+        [SwaggerResponse(statusCode: 400, type: typeof(BookApiResponse400), description: "Bad Request")]
         public async Task<IActionResult> UpdateBookById([FromBody] Book body, [FromRoute][Required] long? id)
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
