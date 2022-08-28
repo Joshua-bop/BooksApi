@@ -1,13 +1,18 @@
-﻿namespace BooksApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BooksApi.Models
 {
     public class Book
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
+        [Required]
         public string Title { get; set; }
+        [Required]
         public string Author { get; set; }
+        [Required]
         public int Price { get; set; }
 
-        public Book(int id, string title, string author, int price)
+        public Book(long id, string title, string author, int price)
         {
             Id = id;
             Title = title;

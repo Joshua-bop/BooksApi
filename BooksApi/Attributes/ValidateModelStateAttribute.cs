@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using BooksApi.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -36,7 +37,8 @@ namespace BooksApi.Attributes
 
             if (!context.ModelState.IsValid)
             {
-                context.Result = new BadRequestObjectResult(context.ModelState);
+                var badRequestResponse = new BookApiResponse400(context);
+                context.Result = new BadRequestObjectResult(badRequestResponse);
             }
         }
 

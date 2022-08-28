@@ -1,11 +1,30 @@
 global using BooksApi.Data;
 global using Microsoft.EntityFrameworkCore;
+using BooksApi.Repository.Contracts;
+using BooksApi.Repository;
+using BooksApi.Models.Responses;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers()
+//    .ConfigureApiBehaviorOptions(options =>
+//    {
+//        options.SuppressModelStateInvalidFilter = true;
+//    });
+
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var problems = new BookApiResponse400(context);
+            return new BadRequestObjectResult(problems);
+        };
+    });
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
@@ -14,6 +33,9 @@ builder.Services.AddDbContext<DataContext>(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// TODO move to dedicated Dependency handler class
+builder.Services.AddScoped<IBooksRepository, BooksRepository>();
 
 var app = builder.Build();
 

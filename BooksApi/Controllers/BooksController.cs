@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using BooksApi.Attributes;
 using BooksApi.Models;
 using BooksApi.Models.Responses;
+using BooksApi.Repository.Contracts;
 using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -13,6 +14,12 @@ namespace BooksApi.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
+        private readonly IBooksRepository _BooksRepository;
+
+        public BooksController(IBooksRepository booksRepository)
+        {
+            _BooksRepository = booksRepository;
+        }
         /// <summary>
         /// Creates a new book
         /// </summary>
@@ -24,21 +31,17 @@ namespace BooksApi.Controllers
         [ValidateModelState]
         [SwaggerOperation("CreateBook")]
         [SwaggerResponse(statusCode: 201, type: typeof(InlineResponse201), description: "Created")]
-        [SwaggerResponse(statusCode: 400, type: typeof(InlineResponse400), description: "Bad Request")]
-        public virtual IActionResult CreateBook([FromBody] Book body)
+        [SwaggerResponse(statusCode: 400, type: typeof(BookApiResponse400), description: "Bad Request")]
+        public async Task<IActionResult> CreateBook([FromBody] Book body)
         {
             //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(201, default(InlineResponse201));
 
             //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(400, default(InlineResponse400));
-            string exampleJson = null;
-            exampleJson = "{\n  \"id\" : 0\n}";
+            await _BooksRepository.AddBook(body);
 
-            var example = exampleJson != null
-            ? JsonConvert.DeserializeObject<InlineResponse201>(exampleJson)
-            : default(InlineResponse201);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            return StatusCode(201, default(InlineResponse201));
         }
 
         /// <summary>
@@ -51,7 +54,7 @@ namespace BooksApi.Controllers
         [Route("//books/{id}")]
         [ValidateModelState]
         [SwaggerOperation("DeleteBookById")]
-        public virtual IActionResult DeleteBookById([FromRoute][Required] long? id)
+        public async Task<IActionResult> DeleteBookById([FromRoute][Required] long? id)
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200);
@@ -72,7 +75,7 @@ namespace BooksApi.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetBook")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<Book>), description: "Success")]
-        public virtual IActionResult GetBook([FromQuery] string sortby)
+        public async Task<IActionResult> GetBook([FromQuery] string sortby)
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(List<Book>));
@@ -96,20 +99,14 @@ namespace BooksApi.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetBookById")]
         [SwaggerResponse(statusCode: 200, type: typeof(Book), description: "Success")]
-        public virtual IActionResult GetBookById([FromRoute][Required] long? id)
+        public async Task<IActionResult> GetBookById([FromRoute][Required] long id)
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(Book));
+            var result = await _BooksRepository.GetBookById(id);
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-            string exampleJson = null;
-            exampleJson = "{\n  \"id\" : 4,\n  \"title\" : \"Journey to the Center of the Earth\",\n  \"author\" : \"Jules Verne\",\n  \"price\" : 10.99\n}";
+            if (result == null)
+                return new NotFoundResult();
 
-            var example = exampleJson != null
-            ? JsonConvert.DeserializeObject<Book>(exampleJson)
-            : default(Book);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            return Ok(result);
         }
 
         /// <summary>
@@ -125,7 +122,7 @@ namespace BooksApi.Controllers
         [ValidateModelState]
         [SwaggerOperation("UpdateBookById")]
         [SwaggerResponse(statusCode: 400, type: typeof(InlineResponse400), description: "Bad Request")]
-        public virtual IActionResult UpdateBookById([FromBody] Book body, [FromRoute][Required] long? id)
+        public async Task<IActionResult> UpdateBookById([FromBody] Book body, [FromRoute][Required] long? id)
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200);
