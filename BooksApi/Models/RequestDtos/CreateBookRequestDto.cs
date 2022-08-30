@@ -9,9 +9,9 @@ namespace BooksApi.Models.RequestDtos
         [Required]
         public string Author { get; set; }
         [Required]
-        public int Price { get; set; }
+        public string Price { get; set; }
 
-        public CreateBookRequestDto(string title, string author, int price)
+        public CreateBookRequestDto(string title, string author, string price)
         {
             Title = title;
             Author = author;

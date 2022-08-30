@@ -3,6 +3,8 @@ global using Microsoft.EntityFrameworkCore;
 using BooksApi.Repository.Contracts;
 using BooksApi.Repository;
 using BooksApi.Models.Responses;
+using BooksApi.Services;
+using BooksApi.Services.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +39,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // TODO move to dedicated Dependency handler class
 builder.Services.AddScoped<IBooksRepository, BooksRepository>();
+builder.Services.AddScoped<IBooksService, BooksService>();
 
 var app = builder.Build();
 

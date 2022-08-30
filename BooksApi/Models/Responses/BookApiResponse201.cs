@@ -20,17 +20,9 @@ using Newtonsoft.Json;
 
 namespace BooksApi.Models.Responses
 { 
-    /// <summary>
-    /// 
-    /// </summary>
     [DataContract]
-    public partial class BookApiResponse201
+    public class BookApiResponse201
     { 
-        /// <summary>
-        /// Id of the created book.
-        /// </summary>
-        /// <value>Id of the created book.</value>
-
         [DataMember(Name="id")]
         public long? Id { get; set; }
     }

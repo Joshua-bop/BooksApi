@@ -7,7 +7,7 @@ namespace BooksApi.Repository
     {
         private readonly DataContext _dataContext;
 
-        public BooksRepository (DataContext dataContext)
+        public BooksRepository(DataContext dataContext)
         {
             _dataContext = dataContext;
         }
@@ -22,7 +22,6 @@ namespace BooksApi.Repository
         public async Task DeleteBookById(long id)
         {
             Book book = new Book(id, "", "", 0);
-            _dataContext.Books.Attach(book);
             _dataContext.Books.Remove(book);
             await _dataContext.SaveChangesAsync();
         }
@@ -34,19 +33,59 @@ namespace BooksApi.Repository
             return book;
         }
 
-        public async Task<List<Book>> GetBooksBySearchTerm(string searchTerm)
+        public async Task<List<Book>> GetBooksSortedByAuthor(bool isDescending = true)
         {
-            //List<Book> books = from book in _dataContext.Books
-            //                   where 
-
-            
-            throw new NotImplementedException();
+            if (isDescending)
+            {
+                return await _dataContext.Books.OrderByDescending(x => x.Author).ToListAsync();
+            }
+            else
+            {
+                return await _dataContext.Books.OrderBy(x => x.Author).ToListAsync();
+            }
         }
 
-        public async Task UpdateBook(Book book)
+        public async Task<List<Book>> GetBooksSortedByPrice(bool isDescending = true)
         {
+            if (isDescending)
+            {
+                return await _dataContext.Books.OrderByDescending(x => x.Price).ToListAsync();
+            }
+            else
+            {
+                return await _dataContext.Books.OrderBy(x => x.Price).ToListAsync();
+            }
+        }
 
-            throw new NotImplementedException();
+        public async Task<List<Book>> GetBooksSortedByTitle(bool isDescending = true)
+        {
+            if (isDescending)
+            {
+                return await _dataContext.Books.OrderByDescending(x => x.Title).ToListAsync();
+            }
+            else
+            {
+                return await _dataContext.Books.OrderBy(x => x.Title).ToListAsync();
+            }
+        }
+
+        public async Task UpdateBook(Book newBook)
+        {
+            var book = await GetBookById(newBook.Id);
+
+            if (book == null) throw new Exception("Failed to find book during Update");
+
+            book.Title = newBook.Title;
+            book.Author = newBook.Author;
+            book.Price = newBook.Price;
+            await _dataContext.SaveChangesAsync();
+        }
+        public async Task<bool> ValidateItemExists(long id)
+        {
+            var book = await GetBookById(id);
+            if (book == null) return false;
+            _dataContext.Entry(book).State = EntityState.Detached;
+            return true;
         }
     }
 }

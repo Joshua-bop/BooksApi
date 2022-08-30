@@ -10,6 +10,7 @@ using BooksApi.Services.Contracts;
 using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
 using AutoMapper;
+using BooksApi.Models.ResponseDtos;
 
 namespace BooksApi.Controllers
 {
@@ -54,12 +55,10 @@ namespace BooksApi.Controllers
         [SwaggerOperation("DeleteBookById")]
         public async Task<IActionResult> DeleteBookById([FromRoute][Required] long id)
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200);
-
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-
+            if(!await _booksService.ValidateBookExists(id))
+            {
+                return StatusCode(404);
+            }
             await _booksService.DeleteBookById(id);
             return Ok();
         }
@@ -73,11 +72,10 @@ namespace BooksApi.Controllers
         [Route("//books")]
         [ValidateModelState]
         [SwaggerOperation("GetBook")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<Book>), description: "Success")]
-        public async Task<IActionResult> GetBook([FromQuery] string sortby)
+        [SwaggerResponse(statusCode: 200, type: typeof(List<BookResponseDto>), description: "Success")]
+        public async Task<IActionResult> GetBooks([FromQuery] string? sortby)
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<Book>));
+            if (sortby == null) sortby = "title";
             var result = await _booksService.GetBooksBySearchTerm(sortby);
             return StatusCode(200, result);
         }
@@ -92,7 +90,7 @@ namespace BooksApi.Controllers
         [Route("//books/{id}")]
         [ValidateModelState]
         [SwaggerOperation("GetBookById")]
-        [SwaggerResponse(statusCode: 200, type: typeof(Book), description: "Success")]
+        [SwaggerResponse(statusCode: 200, type: typeof(BookResponseDto), description: "Success")]
         public async Task<IActionResult> GetBookById([FromRoute][Required] long id)
         {
             var result = await _booksService.GetBookById(id);
@@ -116,14 +114,14 @@ namespace BooksApi.Controllers
         [ValidateModelState]
         [SwaggerOperation("UpdateBookById")]
         [SwaggerResponse(statusCode: 400, type: typeof(BookApiResponse400), description: "Bad Request")]
-        public async Task<IActionResult> UpdateBookById([FromBody] Book body, [FromRoute][Required] long? id)
+        public async Task<IActionResult> UpdateBookById([FromBody] CreateBookRequestDto body, [FromRoute][Required] long id)
         {
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400, default(InlineResponse400));
+            if (!await _booksService.ValidateBookExists(id))
+            {
+                return StatusCode(404);
+            }
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-            await _booksService.UpdateBook(body);
+            await _booksService.UpdateBook(body, id);
             return StatusCode(200);
         }
     }
