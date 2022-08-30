@@ -6,6 +6,7 @@ using BooksApi.Models;
 using BooksApi.Models.Responses;
 using BooksApi.Repository.Contracts;
 using BooksApi.Models.RequestDtos;
+using BooksApi.Services.Contracts;
 using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
 using AutoMapper;
@@ -16,13 +17,11 @@ namespace BooksApi.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly IBooksRepository _BooksRepository;
-        private readonly IMapper _mapper;
+        private readonly IBooksService _booksService;
 
-        public BooksController(IBooksRepository booksRepository, IMapper mapper)
+        public BooksController(IBooksService booksService, IMapper mapper)
         {
-            _BooksRepository = booksRepository;
-            _mapper = mapper;
+            _booksService = booksService;
         }
         /// <summary>
         /// Creates a new book
@@ -38,15 +37,8 @@ namespace BooksApi.Controllers
         [SwaggerResponse(statusCode: 400, type: typeof(BookApiResponse400), description: "Bad Request")]
         public async Task<IActionResult> CreateBook([FromBody] CreateBookRequestDto body)
         {
-            //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(201, default(InlineResponse201));
-
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400, default(InlineResponse400));
-            Book mappedBook = _mapper.Map<Book>(body);
-            
             var response = new BookApiResponse201();
-            response.Id = await _BooksRepository.AddBook(mappedBook);
+            response.Id = await _booksService.AddBook(body);
             return StatusCode(201, response);
         }
 
@@ -60,7 +52,7 @@ namespace BooksApi.Controllers
         [Route("//books/{id}")]
         [ValidateModelState]
         [SwaggerOperation("DeleteBookById")]
-        public async Task<IActionResult> DeleteBookById([FromRoute][Required] long? id)
+        public async Task<IActionResult> DeleteBookById([FromRoute][Required] long id)
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200);
@@ -68,7 +60,8 @@ namespace BooksApi.Controllers
             //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(404);
 
-            throw new NotImplementedException();
+            await _booksService.DeleteBookById(id);
+            return Ok();
         }
 
         /// <summary>
@@ -85,13 +78,8 @@ namespace BooksApi.Controllers
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(List<Book>));
-            string exampleJson = null;
-            exampleJson = "[ {\n  \"id\" : 4,\n  \"title\" : \"Journey to the Center of the Earth\",\n  \"author\" : \"Jules Verne\",\n  \"price\" : 10.99\n}, {\n  \"id\" : 4,\n  \"title\" : \"Journey to the Center of the Earth\",\n  \"author\" : \"Jules Verne\",\n  \"price\" : 10.99\n} ]";
-
-            var example = exampleJson != null
-            ? JsonConvert.DeserializeObject<List<Book>>(exampleJson)
-            : default(List<Book>);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            var result = await _booksService.GetBooksBySearchTerm(sortby);
+            return StatusCode(200, result);
         }
 
         /// <summary>
@@ -107,7 +95,7 @@ namespace BooksApi.Controllers
         [SwaggerResponse(statusCode: 200, type: typeof(Book), description: "Success")]
         public async Task<IActionResult> GetBookById([FromRoute][Required] long id)
         {
-            var result = await _BooksRepository.GetBookById(id);
+            var result = await _booksService.GetBookById(id);
 
             if (result == null)
                 return new NotFoundResult();
@@ -130,16 +118,13 @@ namespace BooksApi.Controllers
         [SwaggerResponse(statusCode: 400, type: typeof(BookApiResponse400), description: "Bad Request")]
         public async Task<IActionResult> UpdateBookById([FromBody] Book body, [FromRoute][Required] long? id)
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200);
-
             //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(400, default(InlineResponse400));
 
             //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(404);
-
-            throw new NotImplementedException();
+            await _booksService.UpdateBook(body);
+            return StatusCode(200);
         }
     }
 }

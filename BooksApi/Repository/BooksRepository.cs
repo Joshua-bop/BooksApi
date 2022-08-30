@@ -34,18 +34,18 @@ namespace BooksApi.Repository
             return book;
         }
 
-        public async Task<List<Book>> GetBooks()
-        {
-            return await _dataContext.Books.ToListAsync();
-        }
-
         public async Task<List<Book>> GetBooksBySearchTerm(string searchTerm)
         {
+            //List<Book> books = from book in _dataContext.Books
+            //                   where 
+
+            
             throw new NotImplementedException();
         }
 
         public async Task UpdateBook(Book book)
         {
+
             throw new NotImplementedException();
         }
     }
